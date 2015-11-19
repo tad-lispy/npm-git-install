@@ -21,13 +21,16 @@
   "author": "Tadeusz Łazurski (http://lazurski.pl/)",
   "license": "ISC",
   "dependencies": {
-    "api-authorization-toolkit": "git+ssh://git@rizzitelli.beestar.eu:tadeusz/api-authorization-toolkit.git",
-    "data-object": "github:lzrski/data-object",
     "nodegit": "^0.5.0",
     "temp": "^0.8.3"
   },
   "devDependencies": {
     "coffee-script": "^1.10.0",
     "gulp-cli": "gulpjs/gulp-cli#4.0"
+  },
+  "gitDependencies": {
+    "data-object": "https://github.com/lzrski/data-object.git",
+    "config-object": "https://github.com/lzrski/config-object.git",
+    "api-authorization-toolkit": "git@rizzitelli.beestar.eu:tadeusz/api-authorization-toolkit.git"
   }
 }
