@@ -1,0 +1,33 @@
+{
+  "name": "npm-git-install",
+  "version": "0.0.0",
+  "description": "Clones and reinstalls all packages with git url from package.json. See npm/npm#3055 .",
+  "main": "build/index.js",
+  "scripts": {
+    "install": "coffee src",
+    "test": "echo test"
+  },
+  "keywords": [
+    "npm",
+    "install",
+    "packages",
+    "git",
+    "prepublish",
+    "clone",
+    "local",
+    "directory",
+    "temporary"
+  ],
+  "author": "Tadeusz Łazurski (http://lazurski.pl/)",
+  "license": "ISC",
+  "dependencies": {
+    "api-authorization-toolkit": "git+ssh://git@rizzitelli.beestar.eu:tadeusz/api-authorization-toolkit.git",
+    "data-object": "github:lzrski/data-object",
+    "nodegit": "^0.5.0",
+    "temp": "^0.8.3"
+  },
+  "devDependencies": {
+    "coffee-script": "^1.10.0",
+    "gulp-cli": "gulpjs/gulp-cli#4.0"
+  }
+}

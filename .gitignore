@@ -1,0 +1,8 @@
+node_modules/
+bower_components/
+build/
+*.sublime-workspace
+npm-debug.log
+wiki/
+config.cson
+*-data.sqlite
