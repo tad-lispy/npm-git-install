@@ -36,8 +36,11 @@ reinstall = ({url, revision}) ->
     .then -> exec 'npm install', cwd: tmp, stdio: 'inherit'
     .then -> exec "npm install #{tmp}"
 
-{ gitDependencies } = require '../package.json'
-packages = ( url for name, url of gitDependencies)
+discover = (path = '../package.json') ->
+  path = resolve path
+  delete require.cache[path]
+  { gitDependencies } = require path
+  ( url for name, url of gitDependencies)
 
 ###
 
@@ -45,14 +48,20 @@ As seen on http://pouchdb.com/2015/05/18/we-have-a-problem-with-promises.html
 
 ###
 
-factories = packages.map (url) ->
-  [ whole, url, revision] = url.match /^(.+)(?:#(.+))?$/
-  revision ?= 'master'
-  return -> reinstall { url, revision }
+reinstall_all = (packages) ->
+  factories = packages.map (url) ->
+    [ whole, url, revision] = url.match /^(.+)(?:#(.+))?$/
+    revision ?= 'master'
+    return -> reinstall { url, revision }
 
-sequence = do Promise.resolve
-for factory in factories
-  sequence = sequence.then factory
+  sequence = do Promise.resolve
+  for factory in factories
+    sequence = sequence.then factory
 
-sequence.catch (error) ->
-  console.error error
+  return sequence
+
+module.exports = {
+  discover
+  reinstall
+  reinstall_all
+}

@@ -21,6 +21,7 @@
   "author": "Tadeusz Łazurski (http://lazurski.pl/)",
   "license": "ISC",
   "dependencies": {
+    "commander": "^2.9.0",
     "nodegit": "^0.5.0",
     "temp": "^0.8.3"
   },
