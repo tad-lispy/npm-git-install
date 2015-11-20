@@ -1,7 +1,7 @@
 cp          = require 'child_process'
 temp        = require 'temp'
 { resolve } = require 'path'
-{ Clone }   = require 'nodegit'
+NodeGit     = require 'nodegit'
 
 {
   cwd
@@ -35,8 +35,13 @@ reinstall = (options = {}, pkg) ->
       .then (path) ->
         tmp = path
         if verbose then console.log "Cloning '#{url}' into #{tmp}"
-        # TODO: Handle Git authentication (at least ssh keys)
-        Clone url, tmp, checkoutBranch: revision
+        NodeGit.Clone url, tmp,
+          checkoutBranch: revision
+          fetchOpts     :
+            callbacks     :
+              certificateCheck: -> 1 # FIX for OSX (it rhymes :)
+              credentials     : (url, user) -> NodeGit.Cred.sshKeyFromAgent user
+
       .then ->
         cmd = 'npm install'
         if verbose then console.log "executing #{cmd}"

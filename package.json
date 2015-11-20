@@ -30,8 +30,6 @@
     "gulp-cli": "gulpjs/gulp-cli#4.0"
   },
   "gitDependencies": {
-    "data-object": "https://github.com/lzrski/data-object.git",
-    "config-object": "https://github.com/lzrski/config-object.git",
     "api-authorization-toolkit": "git@rizzitelli.beestar.eu:tadeusz/api-authorization-toolkit.git"
   }
 }
