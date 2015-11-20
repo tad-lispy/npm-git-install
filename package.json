@@ -1,9 +1,9 @@
 {
   "name": "npm-git-install",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Clones and reinstalls all packages with git url from package.json. See npm/npm#3055 .",
   "main": "build/index.js",
-  "bin" : {
+  "bin": {
     "npm-git-install": "build/cli.js"
   },
   "scripts": {
