@@ -3,8 +3,12 @@
   "version": "0.0.0",
   "description": "Clones and reinstalls all packages with git url from package.json. See npm/npm#3055 .",
   "main": "build/index.js",
+  "bin" : {
+    "npm-git-install": "build/cli.js"
+  },
   "scripts": {
-    "install": "coffee src",
+    "prepublish": "coffee --no-header -cbmo build src",
+    "develop": "coffee --watch --no-header -cbmo build src",
     "test": "echo test"
   },
   "keywords": [
@@ -26,10 +30,6 @@
     "temp": "^0.8.3"
   },
   "devDependencies": {
-    "coffee-script": "^1.10.0",
-    "gulp-cli": "gulpjs/gulp-cli#4.0"
-  },
-  "gitDependencies": {
-    "api-authorization-toolkit": "git@rizzitelli.beestar.eu:tadeusz/api-authorization-toolkit.git"
+    "coffee-script": "^1.10.0"
   }
 }

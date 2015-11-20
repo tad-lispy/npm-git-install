@@ -1,3 +1,6 @@
+`#!/usr/bin/env node
+`
+
 {
   discover
   reinstall_all
@@ -25,13 +28,12 @@ cli
   args: [ file ]
 } = cli
 
-complain = (rant) ->
-  console.error rant
-  process.exit 1
+file ?= 'package.json'
 
-# All the possible complaints
-if not file?          then do cli.help
-if all                then complain "I'd love to do it all, but it's not implemented yet. Sorry."
+if all
+  # TODO: Implement messy, but compatible discovery
+  console.error "I'd love to do it all, but it's not implemented yet. Sorry."
+  process.exit 1
 
 file = path.resolve file
 if verbose then console.log "Reading dependencies from #{file}"
