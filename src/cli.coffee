@@ -11,10 +11,10 @@ cli
     A utility to properly install npm git dependencies.
   """
   .arguments '<file>'
-  .option '-s --silent',  'do not print to stdio'
+  .option '-s --silent',  'suppress child processes output'
+  .option '-v --verbose', 'be verbose'
   .option '-a --all',     'reinstall all git dependencies and devDependencies'
   .option '-d --dry',     'just print what packages would be installed'
-  .option '-v --verbose', 'be verbose'
   .parse process.argv
 
 {
@@ -31,8 +31,6 @@ complain = (rant) ->
 
 # All the possible complaints
 if not file?          then do cli.help
-if silent and verbose then complain "Silent or verbose? Please make your mind."
-if silent             then complain "Silence is golden, but it's not implemented yet. Sorry."
 if all                then complain "I'd love to do it all, but it's not implemented yet. Sorry."
 
 file = path.resolve file
@@ -42,13 +40,17 @@ tap = (fn) -> (value) ->
   fn value
   return value
 
+print = (packages) ->
+  if dry or verbose then console.log packages.join '\n'
+
+dry_guardian = ->
+  if dry then process.exit 0
+
 Promise
   .resolve discover 'package.json'
-  .then (packages) ->
-    if dry or verbose then console.log packages.join '\n'
-    if dry then process.exit 0
-    return packages
-  .then reinstall_all
+  .then tap print
+  .then tap dry_guardian
+  .then reinstall_all {silent, verbose}
   .catch (error) ->
     console.error error
     throw error

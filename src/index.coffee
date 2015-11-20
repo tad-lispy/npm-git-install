@@ -10,7 +10,6 @@ temp        = require 'temp'
 
 # Helpful promises
 exec = (cmd, options) -> new Promise (resolve, reject) ->
-  console.log "executing #{cmd}"
   [ cmd, args... ] = cmd.split ' '
   child = cp.spawn cmd, args, options
   child.on 'close', (code) ->
@@ -23,18 +22,44 @@ mktmp = (prefix) -> new Promise (resolve, reject) ->
     resolve path
 
 
-reinstall = ({url, revision}) ->
-  tmp = null
-  temp.track()
+reinstall = (options = {}, pkg) ->
+  {
+    silent
+    verbose
+  } = options
 
-  mktmp 'npm-git-'
-    .then (path) ->
-      tmp = path
-      console.log "Cloning '#{url}' into #{tmp}"
-      # TODO: Handle Git authentication (at least ssh keys)
-      Clone url, tmp, checkoutBranch: revision
-    .then -> exec 'npm install', cwd: tmp, stdio: 'inherit'
-    .then -> exec "npm install #{tmp}"
+  curried = ({url, revision}) ->
+    do temp.track
+    tmp = null
+    mktmp 'npm-git-'
+      .then (path) ->
+        tmp = path
+        if verbose then console.log "Cloning '#{url}' into #{tmp}"
+        # TODO: Handle Git authentication (at least ssh keys)
+        Clone url, tmp, checkoutBranch: revision
+      .then ->
+        cmd = 'npm install'
+        if verbose then console.log "executing #{cmd}"
+
+        exec cmd,
+          cwd   : tmp
+          stdio : [
+            'pipe'
+            if silent then 'pipe' else process.stdout
+            process.stderr
+          ]
+      .then ->
+        cmd = "npm install #{tmp}"
+        if verbose then console.log "executing #{cmd}"
+
+        exec cmd,
+          stdio : [
+            'pipe'
+            if silent then 'pipe' else process.stdout
+            process.stderr
+          ]
+
+  return if pkg then curried pkg else curried
 
 discover = (path = '../package.json') ->
   path = resolve path
@@ -48,17 +73,20 @@ As seen on http://pouchdb.com/2015/05/18/we-have-a-problem-with-promises.html
 
 ###
 
-reinstall_all = (packages) ->
-  factories = packages.map (url) ->
-    [ whole, url, revision] = url.match /^(.+)(?:#(.+))?$/
-    revision ?= 'master'
-    return -> reinstall { url, revision }
+reinstall_all = (options = {}, packages) ->
+  curried = (packages) ->
+    factories = packages.map (url) ->
+      [ whole, url, revision] = url.match /^(.+)(?:#(.+))?$/
+      revision ?= 'master'
+      return -> reinstall options, { url, revision }
 
-  sequence = do Promise.resolve
-  for factory in factories
-    sequence = sequence.then factory
+    sequence = do Promise.resolve
+    for factory in factories
+      sequence = sequence.then factory
 
-  return sequence
+    return sequence
+
+  return if packages then curried packages else curried
 
 module.exports = {
   discover
