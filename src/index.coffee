@@ -81,7 +81,7 @@ As seen on http://pouchdb.com/2015/05/18/we-have-a-problem-with-promises.html
 reinstall_all = (options = {}, packages) ->
   curried = (packages) ->
     factories = packages.map (url) ->
-      [ whole, url, revision] = url.match /^(.+)(?:#(.+))?$/
+      [ whole, url, revision] = url.match /^(.+?)(?:#(.+))?$/
       revision ?= 'master'
       return -> reinstall options, { url, revision }
 
