@@ -1,7 +1,7 @@
 {
   "name": "npm-git-install",
   "version": "0.1.1",
-  "description": "Clones and reinstalls all packages with git url from package.json. See npm/npm#3055 .",
+  "description": "Clones and (re)installs packages from remote git repos",
   "main": "build/index.js",
   "bin": {
     "npm-git-install": "build/cli.js"
@@ -22,6 +22,10 @@
     "directory",
     "temporary"
   ],
+  "repository" : {
+    "type" : "git",
+    "url" : "https://github.com/lzrski/npm-git-install.git"
+  }
   "author": "Tadeusz Łazurski (http://lazurski.pl/)",
   "license": "ISC",
   "dependencies": {
