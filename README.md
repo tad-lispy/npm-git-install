@@ -27,7 +27,7 @@ In your `pacakge.json` add:
 }
 ```
 
-Obviously replace `*-pacakge-name` and git URLs with values relevant to your project. URLs has to be in cannonical form (i.e. one that you would provide to `git clone` on command line) - no fancy NPM shortcuts like "user/repo" or "bitbucket:user/repo". If you want this, I'm open for PR. Actually I started to implement this, but gave up - see `messy-auto-discovery` branch.
+Obviously replace `*-package-name` and git URLs with values relevant to your project. URLs has to be in cannonical form (i.e. one that you would provide to `git clone` on command line) - no fancy NPM shortcuts like "user/repo" or "bitbucket:user/repo". If you want this, I'm open for PR. Actually I started to implement this, but gave up - see `messy-auto-discovery` branch.
 
 Why
 ---
