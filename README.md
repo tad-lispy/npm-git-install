@@ -90,7 +90,7 @@ You can also use it programmatically. Just require `npm-git-install`. It exposes
 
 If you are a [Gulp][] user, then it should be easy enough to integrate it with your gulpfile.
 
-### Why not use `dependencies` and `gitDependencies`
+### Why not use `dependencies` and `devDependencies`
 
 I tried and it's hard, because NPM supports [fancy things as Git URLs][URLs]. See `messy-auto-discovery` branch. You are welcome to take it from where I left. There is `--all` CLI option reserved that should do that. It is currently not supported.
 
