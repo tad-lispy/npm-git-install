@@ -34,13 +34,15 @@ reinstall = (options = {}, pkg) ->
     mktmp 'npm-git-'
       .then (path) ->
         tmp = path
+        cmd = "git clone #{url} #{tmp}"
         if verbose then console.log "Cloning '#{url}' into #{tmp}"
-        NodeGit.Clone url, tmp,
-          checkoutBranch: revision
-          fetchOpts     :
-            callbacks     :
-              certificateCheck: -> 1 # FIX for OSX (it rhymes :)
-              credentials     : (url, user) -> NodeGit.Cred.sshKeyFromAgent user
+
+        exec cmd,
+          stdio : [
+            'pipe'
+            if silent then 'pipe' else process.stdout
+            process.stderr
+          ]
 
       .then ->
         cmd = 'npm install'
