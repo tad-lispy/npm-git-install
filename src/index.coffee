@@ -28,7 +28,7 @@ reinstall = (options = {}, pkg) ->
     verbose
   } = options
 
-  curried = ({url, revision}) ->
+  curried = ({ url, revision }) ->
     do temp.track
     tmp = null
     stdio = [
