@@ -43,6 +43,18 @@ reinstall = (options = {}, pkg) ->
             if silent then 'pipe' else process.stdout
             process.stderr
           ]
+      .then ->
+        cmd = "git checkout #{revision}"
+
+        if verbose then console.log "Checking out #{revision}"
+
+        exec cmd,
+          cwd   : tmp
+          stdio : [
+            'pipe'
+            if silent then 'pipe' else process.stdout
+            process.stderr
+          ]
 
       .then ->
         cmd = 'npm install'
