@@ -31,52 +31,38 @@ reinstall = (options = {}, pkg) ->
   curried = ({url, revision}) ->
     do temp.track
     tmp = null
+    stdio = [
+      'pipe'
+      if silent then 'pipe' else process.stdout
+      process.stderr
+    ]
+
     mktmp 'npm-git-'
       .then (path) ->
         tmp = path
         cmd = "git clone #{url} #{tmp}"
         if verbose then console.log "Cloning '#{url}' into #{tmp}"
 
-        exec cmd,
-          stdio : [
-            'pipe'
-            if silent then 'pipe' else process.stdout
-            process.stderr
-          ]
+        exec cmd, { stdio }
+
       .then ->
         cmd = "git checkout #{revision}"
 
         if verbose then console.log "Checking out #{revision}"
 
-        exec cmd,
-          cwd   : tmp
-          stdio : [
-            'pipe'
-            if silent then 'pipe' else process.stdout
-            process.stderr
-          ]
+        exec cmd, { cwd: tmp, stdio }
 
       .then ->
         cmd = 'npm install'
         if verbose then console.log "executing #{cmd}"
 
-        exec cmd,
-          cwd   : tmp
-          stdio : [
-            'pipe'
-            if silent then 'pipe' else process.stdout
-            process.stderr
-          ]
+        exec cmd, { cwd: tmp, stdio }
+
       .then ->
         cmd = "npm install #{tmp}"
         if verbose then console.log "executing #{cmd}"
 
-        exec cmd,
-          stdio : [
-            'pipe'
-            if silent then 'pipe' else process.stdout
-            process.stderr
-          ]
+        exec cmd, { stdio }
 
   return if pkg then curried pkg else curried
 
