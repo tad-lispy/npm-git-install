@@ -30,6 +30,7 @@ reinstall = (options = {}, pkg) ->
 
   curried = ({ url, revision }) ->
     do temp.track
+
     tmp = null
     stdio = [
       'pipe'
