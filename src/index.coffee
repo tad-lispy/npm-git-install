@@ -1,6 +1,7 @@
 cp          = require 'child_process'
 temp        = require 'temp'
 jsonfile    = require 'jsonfile'
+fs          = require 'fs'
 { resolve } = require 'path'
 
 {
@@ -93,6 +94,13 @@ reinstall_all = (packages, options = {}) ->
       revision ?= 'master'
       name = url.split(':').pop().replace(/\.git$/, "")
 
+      try
+        file_stat = fs.statSync(options.git_shrinkwrap)
+        if !file_stat || !file_stat.isFile()
+          options.git_shrinkwrap = ''
+      catch
+        options.git_shrinkwrap = ''
+
       if options.git_shrinkwrap
         sha = sha_for name, options.git_shrinkwrap
         revision = sha if sha
@@ -112,9 +120,10 @@ shrinkwrap = (packages, options = {}) ->
     dependencies: {}
 
   for pkg in packages
-    [ whole, git_at_github, name, dot_git, branch] = pkg.match /^(.+?):(.+?)(?:\.git)(?:#(.+))?$/
-    ref = "ref/heads/#{branch}"
+    [ whole, git_at_github, name, branch] = pkg.match /^(.+?):(.+?)(?:\.git)(?:#(.+))?$/
+    ref = "refs/heads/#{branch}"
     ref = 'HEAD' if !branch || branch == 'master'
+
     cmd = "git ls-remote #{git_at_github}:#{name}.git #{ref} | head -1 | cut -f 1"
     if options.verbose then console.log "Getting latest sha of #{whole}"
 
@@ -125,7 +134,7 @@ shrinkwrap = (packages, options = {}) ->
     shrinkwrap_json.dependencies[name] = sha
 
   console.log "Writing shrinkwrap to #{options.git_shrinkwrap}"
-  console.log shrinkwrap_json
+  if options.verbose then console.log shrinkwrap_json
   jsonfile.writeFileSync(options.git_shrinkwrap, shrinkwrap_json, { spaces: 2 })
 
 module.exports = {

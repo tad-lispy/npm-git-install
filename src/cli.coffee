@@ -43,16 +43,6 @@ validate_paths = (options) ->
   catch
     conf_file_error options.package
 
-  try
-    shrinkwrap_stat = fs.statSync(options.git_shrinkwrap)
-    if !shrinkwrap_stat || !shrinkwrap_stat.isFile()
-      options.git_shrinkwrap = ''
-
-    if options.verbose && options.git_shrinkwrap
-      console.log "Using shrinkwrap from #{options.git_shrinkwrap}"
-  catch
-    options.git_shrinkwrap = ''
-
 print = (packages, options) ->
   return unless options.dry or options.verbose
   console.log 'Detected packages:'
@@ -66,44 +56,38 @@ dry_guardian = (options) ->
   console.log ''
   process.exit 0
 
+run_install = (options) ->
+  try
+    opts = options.parent
+    validate_paths opts
+    packages = discover opts.package
+    print packages, opts
+    dry_guardian opts
+    reinstall_all packages, opts
+  catch error
+    console.error error
+    process.exit 1
+
+run_shrinkwrap = (options) ->
+  try
+    opts = options.parent
+    validate_paths opts
+    packages = discover opts.package
+    print packages, opts
+    dry_guardian opts
+    shrinkwrap packages, opts
+  catch error
+    console.error error
+    process.exit 1
+
 cli
   .command 'shrinkwrap'
   .description 'bump all git dependencies to latest and generate a git-shrinkwrap.json file'
-  .action((options) ->
-    try
-      opts = options.parent
-      validate_paths opts
-      packages = discover opts.package
-      print packages, opts
-      dry_guardian opts
-      shrinkwrap packages, opts
-    catch error
-      console.error error
-      process.exit 1
-  )
+  .action run_shrinkwrap
 
 cli
   .command 'install'
   .description 'install git dependencies'
-  .action((options) ->
-
-    try
-      opts = options.parent
-      validate_paths opts
-      packages = discover opts.package
-      print packages, opts
-      dry_guardian opts
-      reinstall_all packages, opts
-    catch error
-      console.error error
-      process.exit 1
-  )
-
-cli
-  .command '*'
-  .action((cmd, options) ->
-    console.error 'Invalid command'
-    process.exit 1
-  )
+  .action run_install
 
 cli.parse process.argv
