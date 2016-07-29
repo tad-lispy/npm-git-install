@@ -46,15 +46,15 @@ How
 ### From command line
 
 ```sh
-npm-git-install
+npm-git-install install
 ```
 
-This simple script will `git clone` anything it finds in `gitDependencies` section of `package.json` into temporary directory, run `npm install` in this directory (which will trigger `prepublish`) and then `npm install <temporary directory>` in your project. In effect you will get your dependency properly installed.
+This simple script will `git clone` anything it finds in `gitDependencies` section of `package.json` into temporary directory using the optional `git-shrinkwrap.json` file, run `npm install` in this directory (which will trigger `prepublish`) and then `npm install <temporary directory>` in your project. In effect you will get your dependency properly installed.
 
-You can optionally specify file different then `package.json`, e.g.:
+You can optionally specify file different then `package.json` and `git-shrinkwrap.json`, e.g.:
 
 ```sh
-npm-git-install git-dependencies.json
+npm-git-install -c git-dependencies.json -w git-depencencies-shrinkwrap.json
 ```
 
 You may want to do this if you find it offensive to put non-standard section in your `package.json`.
@@ -63,19 +63,19 @@ Also try `--help` for more options.
 
 ### API
 
-You can also use it programmatically. Just require `npm-git-install`. It exposes three methods:
+You can also use it programmatically. Just require `npm-git-install`. It exposes four methods:
 
   * `discover (path)`
 
     Reads list of packages from file at given path and returns array of `{url, revision}` objects. You can supply this to `reinstall_all` method.
 
-  * `reinstall_all (options, packages)`
+  * `reinstall_all (packages, options)`
 
     Executes `reinstall` in series for each package in `packages`. Options are also passed to each `reinstall` call.
 
     Returns a `Promise`.
 
-  * `reinstall (oprions, package)`
+  * `reinstall (package, oprions)`
 
     Clones the repo at `package.url`, checks out `package.revisios`, runs `npm install` at cloned repos directory and installs the package from there.
 
@@ -87,6 +87,14 @@ You can also use it programmatically. Just require `npm-git-install`. It exposes
     Returns a `Promise`.
 
     You probably don't want to use it directly. Just call `reinstall_all` with relevant options.
+
+  * `shrinkwrap (packages, options)`
+
+    The shrinkwrap file will lock each git dependency to the sha specified in the file.
+    
+    `shrinkwrap` creates a shrinkwrap file (default: `git-shrinkwrap.json`) in series containing a sha for each package in `packages`, which will be the latest sha in the specified branch from `packages`.  
+
+    Returns nothing.
 
 If you are a [Gulp][] user, then it should be easy enough to integrate it with your gulpfile.
 
