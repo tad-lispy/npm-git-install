@@ -86,17 +86,29 @@ As seen on http://pouchdb.com/2015/05/18/we-have-a-problem-with-promises.html
 
 ###
 
-reinstall_all = (packages, options = {}) ->
+reinstall_all = (options = {}, packages) ->
 
   curried = (packages) ->
     factories = packages.map (url) ->
       [ whole, url, revision] = url.match /^(.+?)(?:#(.+))?$/
       revision ?= 'master'
-      name = url.split(':').pop().replace(/\.git$/, "")
+      name = url
+        .split ':'
+        .pop()
+        .replace(/\.git$/, "")
 
+      ###
+      TODO: Decompose shrinkwrap logic from reinstall all
+
+      As it is right now it is mixing concerns too much:
+        * cheking if shrinkwrap exists
+        * reading from shrinkwrap file
+        * getting the sha
+      etc...
+      ###
       try
         file_stat = fs.statSync(options.git_shrinkwrap)
-        if !file_stat || !file_stat.isFile()
+        if not (file_stat? and file_stat.isFile())
           options.git_shrinkwrap = ''
       catch
         options.git_shrinkwrap = ''
@@ -115,14 +127,22 @@ reinstall_all = (packages, options = {}) ->
 
   return if packages then curried packages else curried
 
-shrinkwrap = (packages, options = {}) ->
+shrinkwrap = (options = {}, packages) ->
   shrinkwrap_json =
     dependencies: {}
 
   for pkg in packages
-    [ whole, git_at_github, name, branch] = pkg.match /^(.+?):(.+?)(?:\.git)(?:#(.+))?$/
-    ref = "refs/heads/#{branch}"
-    ref = 'HEAD' if !branch || branch == 'master'
+    [
+      whole       # the wole url
+      credentials # eg. git@github.com
+      name        # package name
+      branch      # revision
+    ] = pkg.match /^(.+?):(.+?)(?:\.git)(?:#(.+))?$/
+    ref =
+      if (not branch?) or (branch is "master")
+        "HEAD"
+      else
+        "refs/heads/#{branch}"
 
     cmd = "git ls-remote #{git_at_github}:#{name}.git #{ref} | head -1 | cut -f 1"
     if options.verbose then console.log "Getting latest sha of #{whole}"
