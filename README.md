@@ -29,6 +29,12 @@ In your `pacakge.json` add:
 
 Obviously replace `*-package-name` and git URLs with values relevant to your project. URLs has to be in canonical form (i.e. one that you would provide to `git clone` on command line) - no fancy NPM shortcuts like "user/repo" or "bitbucket:user/repo". If you want this, I'm open for PR.
 
+Then install your dependencies as usual:
+
+```sh
+npm install
+```
+
 Why
 ---
 
@@ -63,12 +69,10 @@ This simple script will do the following for every `<url>` of `gitDependencies` 
 
 In effect you will get your dependency properly installed.
 
-Otionally it will use `git-shrinkwrap.json` file to lock your dependencies to a certain revision (i.e. a commit).
-
-You can optionally specify different paths for `package.json` and `git-shrinkwrap.json`, e.g.:
+You can optionally specify different paths for `package.json`:
 
 ```sh
-npm-git install -c git-dependencies.json -w git-depencencies-shrinkwrap.json
+npm-git install -c git-dependencies.json
 ```
 
 You may want to do this if you find it offensive to put non-standard section in your `package.json`.
@@ -113,16 +117,6 @@ You can also use it programmatically. Just require `npm-git-install`. It exposes
     Returns a `Promise`.
 
     You probably don't want to use it directly. Just call `reinstall_all` with relevant options.
-
-  * `shrinkwrap (options, packages)`
-
-    The shrinkwrap file will lock each git dependency to the sha specified in the file.
-
-    `shrinkwrap` creates a shrinkwrap file (default: `git-shrinkwrap.json`) in series containing a sha for each package in `packages`, which will be the latest sha in the specified branch from `packages`.
-
-    Options are the same as for `reinstall`.
-
-    Returns nothing.
 
 If you are a [Gulp][] user, then it should be easy enough to integrate it with your gulpfile.
 

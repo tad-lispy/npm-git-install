@@ -1,6 +1,5 @@
 cp          = require 'child_process'
 temp        = require 'temp'
-jsonfile    = require 'jsonfile'
 fs          = require 'fs'
 { resolve } = require 'path'
 
@@ -73,13 +72,6 @@ discover = (package_json = '../package.json') ->
   { gitDependencies } = require package_json
   ( url for name, url of gitDependencies)
 
-sha_for = (name_to_find, shrinkwrap_file = '../git-shrinkwrap.json') ->
-  shrinkwrap_file = resolve shrinkwrap_file
-  delete require.cache[shrinkwrap_file]
-  { dependencies } = require shrinkwrap_file
-  for name, url of dependencies
-    return url if name = name_to_find
-
 ###
 
 As seen on http://pouchdb.com/2015/05/18/we-have-a-problem-with-promises.html
@@ -92,30 +84,6 @@ reinstall_all = (options = {}, packages) ->
     factories = packages.map (url) ->
       [ whole, url, revision] = url.match /^(.+?)(?:#(.+))?$/
       revision ?= 'master'
-      name = url
-        .split ':'
-        .pop()
-        .replace(/\.git$/, "")
-
-      ###
-      TODO: Decompose shrinkwrap logic from reinstall all
-
-      As it is right now it is mixing concerns too much:
-        * cheking if shrinkwrap exists
-        * reading from shrinkwrap file
-        * getting the sha
-      etc...
-      ###
-      try
-        file_stat = fs.statSync(options.git_shrinkwrap)
-        if not (file_stat? and file_stat.isFile())
-          options.git_shrinkwrap = ''
-      catch
-        options.git_shrinkwrap = ''
-
-      if options.git_shrinkwrap
-        sha = sha_for name, options.git_shrinkwrap
-        revision = sha if sha
 
       return -> reinstall options, { url, revision }
 
@@ -127,39 +95,9 @@ reinstall_all = (options = {}, packages) ->
 
   return if packages then curried packages else curried
 
-shrinkwrap = (options = {}, packages) ->
-  shrinkwrap_json =
-    dependencies: {}
-
-  for pkg in packages
-    [
-      whole       # the wole url
-      credentials # eg. git@github.com
-      name        # package name
-      branch      # revision
-    ] = pkg.match /^(.+?):(.+?)(?:\.git)(?:#(.+))?$/
-    ref =
-      if (not branch?) or (branch is "master")
-        "HEAD"
-      else
-        "refs/heads/#{branch}"
-
-    cmd = "git ls-remote #{git_at_github}:#{name}.git #{ref} | head -1 | cut -f 1"
-    if options.verbose then console.log "Getting latest sha of #{whole}"
-
-    sha = cp.execSync(cmd, encoding: 'utf8').trim()
-    if !sha
-      throw "Couldn't fetch latest commit for #{whole}"
-
-    shrinkwrap_json.dependencies[name] = sha
-
-  console.log "Writing shrinkwrap to #{options.git_shrinkwrap}"
-  if options.verbose then console.log shrinkwrap_json
-  jsonfile.writeFileSync(options.git_shrinkwrap, shrinkwrap_json, { spaces: 2 })
 
 module.exports = {
   discover
   reinstall
   reinstall_all
-  shrinkwrap
 }
