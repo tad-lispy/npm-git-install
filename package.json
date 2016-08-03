@@ -4,7 +4,7 @@
   "description": "Clones and (re)installs packages from remote git repos",
   "main": "build/index.js",
   "bin": {
-    "npm-git-install": "build/cli.js"
+    "npm-git": "build/cli.js"
   },
   "scripts": {
     "prepublish": "coffee --no-header -cbmo build src",
