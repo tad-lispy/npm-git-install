@@ -1,5 +1,5 @@
 {
-  "name": "@celkamada/npm-git-install",
+  "name": "npm-git-install",
   "version": "0.1.7",
   "description": "Clones and (re)installs packages from remote git repos",
   "main": "build/index.js",
