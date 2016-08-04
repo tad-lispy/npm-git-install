@@ -1,10 +1,10 @@
 {
   "name": "npm-git-install",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Clones and (re)installs packages from remote git repos",
   "main": "build/index.js",
   "bin": {
-    "npm-git-install": "build/cli.js"
+    "npm-git": "build/cli.js"
   },
   "scripts": {
     "prepublish": "coffee --no-header -cbmo build src",
@@ -30,7 +30,6 @@
   "license": "ISC",
   "dependencies": {
     "commander": "^2.9.0",
-    "nodegit": "^0.11.6",
     "temp": "^0.8.3"
   },
   "devDependencies": {

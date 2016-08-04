@@ -1,7 +1,7 @@
 cp          = require 'child_process'
 temp        = require 'temp'
+fs          = require 'fs'
 { resolve } = require 'path'
-NodeGit     = require 'nodegit'
 
 {
   cwd
@@ -28,48 +28,48 @@ reinstall = (options = {}, pkg) ->
     verbose
   } = options
 
-  curried = ({url, revision}) ->
+  curried = ({ url, revision }) ->
     do temp.track
+
     tmp = null
+    stdio = [
+      'pipe'
+      if silent then 'pipe' else process.stdout
+      process.stderr
+    ]
+
     mktmp 'npm-git-'
       .then (path) ->
         tmp = path
+        cmd = "git clone #{url} #{tmp}"
         if verbose then console.log "Cloning '#{url}' into #{tmp}"
-        NodeGit.Clone url, tmp,
-          checkoutBranch: revision
-          fetchOpts     :
-            callbacks     :
-              certificateCheck: -> 1 # FIX for OSX (it rhymes :)
-              credentials     : (url, user) -> NodeGit.Cred.sshKeyFromAgent user
+
+        exec cmd, { stdio }
+
+      .then ->
+        cmd = "git checkout #{revision}"
+        if verbose then console.log "Checking out #{revision}"
+
+        exec cmd, { cwd: tmp, stdio }
 
       .then ->
         cmd = 'npm install'
         if verbose then console.log "executing #{cmd}"
 
-        exec cmd,
-          cwd   : tmp
-          stdio : [
-            'pipe'
-            if silent then 'pipe' else process.stdout
-            process.stderr
-          ]
+        exec cmd, { cwd: tmp, stdio }
+
       .then ->
         cmd = "npm install #{tmp}"
         if verbose then console.log "executing #{cmd}"
 
-        exec cmd,
-          stdio : [
-            'pipe'
-            if silent then 'pipe' else process.stdout
-            process.stderr
-          ]
+        exec cmd, { stdio }
 
   return if pkg then curried pkg else curried
 
-discover = (path = '../package.json') ->
-  path = resolve path
-  delete require.cache[path]
-  { gitDependencies } = require path
+discover = (package_json = '../package.json') ->
+  package_json = resolve package_json
+  delete require.cache[package_json]
+  { gitDependencies } = require package_json
   ( url for name, url of gitDependencies)
 
 ###
@@ -79,10 +79,12 @@ As seen on http://pouchdb.com/2015/05/18/we-have-a-problem-with-promises.html
 ###
 
 reinstall_all = (options = {}, packages) ->
+
   curried = (packages) ->
     factories = packages.map (url) ->
       [ whole, url, revision] = url.match /^(.+?)(?:#(.+))?$/
       revision ?= 'master'
+
       return -> reinstall options, { url, revision }
 
     sequence = do Promise.resolve
@@ -92,6 +94,7 @@ reinstall_all = (options = {}, packages) ->
     return sequence
 
   return if packages then curried packages else curried
+
 
 module.exports = {
   discover
