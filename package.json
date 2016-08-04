@@ -1,6 +1,6 @@
 {
   "name": "npm-git-install",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Clones and (re)installs packages from remote git repos",
   "main": "build/index.js",
   "bin": {
