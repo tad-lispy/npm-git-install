@@ -1,6 +1,7 @@
 cp          = require 'child_process'
 temp        = require 'temp'
 fs          = require 'fs'
+jsonfile    = require 'jsonfile'
 { resolve } = require 'path'
 
 {
@@ -72,6 +73,12 @@ discover = (package_json = '../package.json') ->
   { gitDependencies } = require package_json
   ( url for name, url of gitDependencies)
 
+sha_for = (name_to_find, shrinkwrap_file = '../git-shrinkwrap.json') ->
+  shrinkwrap_file = resolve shrinkwrap_file
+  delete require.cache[shrinkwrap_file]
+  { dependencies } = require shrinkwrap_file
+  for name, url of dependencies
+    return url if name = name_to_find
 ###
 
 As seen on http://pouchdb.com/2015/05/18/we-have-a-problem-with-promises.html
@@ -84,6 +91,11 @@ reinstall_all = (options = {}, packages) ->
     factories = packages.map (url) ->
       [ whole, url, revision] = url.match /^(.+?)(?:#(.+))?$/
       revision ?= 'master'
+      name = url.split(':').pop().replace(/\.git$/, "")
+
+      if options.git_shrinkwrap
+        sha = sha_for name, options.git_shrinkwrap
+        revision = sha if sha
 
       return -> reinstall options, { url, revision }
 
@@ -95,9 +107,35 @@ reinstall_all = (options = {}, packages) ->
 
   return if packages then curried packages else curried
 
+shrinkwrap = (options = {}, packages) ->
+
+  curried = (packages) ->
+    shrinkwrap_json =
+      dependencies: {}
+
+    for pkg in packages
+      [ whole, git_at_github, name, dot_git, branch] = pkg.match /^(.+?):(.+?)(?:\.git)(?:#(.+))?$/
+      ref = "ref/heads/#{branch}"
+      ref = 'HEAD' if !branch || branch == 'master'
+      cmd = "git ls-remote #{git_at_github}:#{name}.git #{ref} | head -1 | cut -f 1"
+      if options.verbose then console.log "Getting latest sha of #{whole}"
+
+      sha = cp.execSync(cmd, encoding: 'utf8').trim()
+      if !sha
+        throw "Couldn't fetch latest commit for #{whole}"
+
+      shrinkwrap_json.dependencies[name] = sha
+
+    # TODO Move to cli
+    # console.log "Writing shrinkwrap to #{options.git_shrinkwrap}"
+    # console.log shrinkwrap_json
+    jsonfile.writeFileSync(options.git_shrinkwrap, shrinkwrap_json, { spaces: 2 })
+
+  return if packages then curried packages else curried
 
 module.exports = {
   discover
   reinstall
   reinstall_all
+  shrinkwrap
 }
