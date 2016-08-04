@@ -91,9 +91,14 @@ reinstall_all = (options = {}, packages) ->
     factories = packages.map (url) ->
       [ whole, url, revision] = url.match /^(.+?)(?:#(.+))?$/
       revision ?= 'master'
-      name = url.split(':').pop().replace(/\.git$/, "")
 
-      if options.git_shrinkwrap
+      try
+        file_stat = fs.statSync(options.git_shrinkwrap)
+      catch
+        file_stat = null
+
+      if file_stat && file_stat.isFile()
+        name = url.split(':').pop().replace(/\.git$/, "")
         sha = sha_for name, options.git_shrinkwrap
         revision = sha if sha
 
@@ -114,8 +119,8 @@ shrinkwrap = (options = {}, packages) ->
       dependencies: {}
 
     for pkg in packages
-      [ whole, git_at_github, name, dot_git, branch] = pkg.match /^(.+?):(.+?)(?:\.git)(?:#(.+))?$/
-      ref = "ref/heads/#{branch}"
+      [ whole, git_at_github, name, branch] = pkg.match /^(.+?):(.+?)(?:\.git)(?:#(.+))?$/
+      ref = "refs/heads/#{branch}"
       ref = 'HEAD' if !branch || branch == 'master'
       cmd = "git ls-remote #{git_at_github}:#{name}.git #{ref} | head -1 | cut -f 1"
       if options.verbose then console.log "Getting latest sha of #{whole}"
@@ -128,7 +133,7 @@ shrinkwrap = (options = {}, packages) ->
 
     # TODO Move to cli
     # console.log "Writing shrinkwrap to #{options.git_shrinkwrap}"
-    # console.log shrinkwrap_json
+    # if options.verbose then console.log shrinkwrap_json
     jsonfile.writeFileSync(options.git_shrinkwrap, shrinkwrap_json, { spaces: 2 })
 
   return if packages then curried packages else curried

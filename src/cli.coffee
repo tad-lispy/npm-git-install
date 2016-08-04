@@ -80,16 +80,6 @@ validate_paths = (options) ->
   catch
     conf_file_error options.package
 
-  try
-    shrinkwrap_stat = fs.statSync(options.git_shrinkwrap)
-    if !shrinkwrap_stat || !shrinkwrap_stat.isFile()
-      options.git_shrinkwrap = ''
-
-    if options.verbose && options.git_shrinkwrap
-      console.log "Using shrinkwrap from #{options.git_shrinkwrap}"
-  catch
-    options.git_shrinkwrap = ''
-
 ###
 dry_guardian : Object -> _ -> undefined
 
