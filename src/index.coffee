@@ -54,15 +54,40 @@ reinstall = (options = {}, pkg) ->
 
       .then ->
         cmd = 'npm install'
-        if verbose then console.log "executing #{cmd}"
+        if verbose then console.log "executing `#{cmd}` in `#{tmp}`"
 
         exec cmd, { cwd: tmp, stdio }
 
-      .then ->
+      .then () ->
+        # Gather some metadata that can be displayed and saved later
+        cmd = "git show --format=format:%h --no-patch"
+        if verbose then console.log "executing `#{cmd}` in `#{tmp}`"
+
+        sha = cp
+          .execSync cmd, { cwd: tmp }
+          .toString "utf-8"
+          .trim()
+
+        if verbose then console.log "reading package name from #{tmp}/package.json"
+
+
+        {
+          name
+        }   = require "#{tmp}/package.json"
+
+        return {
+          name
+          url
+          sha
+        }
+
+      .then (metadata) ->
         cmd = "npm install #{tmp}"
         if verbose then console.log "executing #{cmd}"
 
         exec cmd, { stdio }
+
+        return metadata
 
   return if pkg then curried pkg else curried
 
@@ -71,6 +96,16 @@ discover = (package_json = '../package.json') ->
   delete require.cache[package_json]
   { gitDependencies } = require package_json
   ( url for name, url of gitDependencies)
+
+save = (file = '../package.json', report) ->
+  file = resolve file
+  delete require.cache[file]
+  pkg = require file
+  pkg.gitDependencies ?= {}
+  for { name, url, sha } in report
+    do (name, url, sha) -> pkg.gitDependencies[name] = "#{url}##{sha}"
+
+  fs.writeFileSync file, JSON.stringify pkg, null, 2
 
 ###
 
@@ -82,12 +117,21 @@ reinstall_all = (options = {}, packages) ->
 
   curried = (packages) ->
     factories = packages.map (url) ->
-      [ whole, url, revision] = url.match /^(.+?)(?:#(.+))?$/
+      [ whole, url, revision ] = url.match ///
+        ^
+        (.+?)         # url
+        (?:\#(.+))?   # revision
+        $
+      ///
       revision ?= 'master'
 
-      return -> reinstall options, { url, revision }
+      return (memo) ->
+        Promise
+          .resolve reinstall options, { url, revision }
+          .then (metadata) ->
+            memo.concat metadata
 
-    sequence = do Promise.resolve
+    sequence = Promise.resolve []
     for factory in factories
       sequence = sequence.then factory
 
@@ -100,4 +144,5 @@ module.exports = {
   discover
   reinstall
   reinstall_all
+  save
 }

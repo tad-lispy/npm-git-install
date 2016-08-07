@@ -4,6 +4,7 @@
 {
   discover
   reinstall_all
+  save
 }           = require '.'
 cli         = require 'commander'
 path        = require 'path'
@@ -18,7 +19,8 @@ cli
   .description """
     A utility to properly install npm git dependencies.
   """
-  .option '-s --silent',  'suppress child processes output'
+  .option '-q --silent',  'suppress child processes output'
+  .option '-s --save',    'resolve URLs to sha and save it to package file'
   .option '-c --package <path>', 'Optional package.json file location [package.json]', "package.json"
   .option '-v --verbose', 'be verbose'
   .option '-d --dry',     'just print what packages would be installed'
@@ -60,19 +62,34 @@ dry_guardian = (options) -> () ->
   process.exit 0
 
 cli
-  .command 'install'
+  .command 'install [packages...]'
   .description 'install git dependencies'
-  .action (command) ->
+  .action (packages, command) ->
     options = command.parent.opts()
-    if options.verbose or options.dry
-      console.log "Installing packages from #{options.package}"
+    console.log {options, packages}
+
+    if packages.length is 0
+      packages = discover options.package
+
+      # TODO: Curry print_list properly
+      (print_list "Installing packages from #{options.package}", options) packages
+
+    else
+      (print_list "Installing following packages", options) packages
 
     Promise
-      .resolve discover options.package
-      .then tap print_list "Discovered packages", options
+      .resolve packages
       .then tap dry_guardian options
       .then reinstall_all options
+      .then tap print_list "Following packages has been installed", options
+      .then (report) ->
+        return if not options.save
+
+        if options.verbose then console.log "Updating #{options.package}"
+        save options.package, report
+
       .catch (error) ->
-        console.error
+        console.error error
+        process.exit 5
 
 cli.parse process.argv
