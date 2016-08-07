@@ -77,6 +77,18 @@ npm-git install -c git-dependencies.json
 
 You may want to do this if you find it offensive to put non-standard section in your `package.json`.
 
+```sh
+npm-git shrinkwrap
+```
+
+This simple script will generate a shrinkwrap file that locks each git dependency to the latest sha on the remote branch.
+
+You can also specify a different path for the optional `git-shrinkwrap.json`:
+
+```sh
+npm-git install -w git-shrinkwrap.json
+```
+
 Also try `--help` for more options.
 
 ### API
@@ -117,6 +129,14 @@ You can also use it programmatically. Just require `npm-git-install`. It exposes
     Returns a `Promise`.
 
     You probably don't want to use it directly. Just call `reinstall_all` with relevant options.
+
+  * `shrinkwrap (options, package)`
+
+    Generates a shrinkwrap file that locks each git dependency to the latest sha on the remote branch.
+
+    This function is curried, so if you provide just `options` argument you will get a new function that takes only one argument - `packages` array.
+
+    Returns a `Promise`.
 
 If you are a [Gulp][] user, then it should be easy enough to integrate it with your gulpfile.
 
