@@ -30,6 +30,7 @@
   "license": "ISC",
   "dependencies": {
     "commander": "^2.9.0",
+    "cross-spawn": "^5.0.1",
     "temp": "^0.8.3"
   },
   "devDependencies": {

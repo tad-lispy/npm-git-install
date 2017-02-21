@@ -1,4 +1,5 @@
 cp          = require 'child_process'
+cs          = require 'cross-spawn'
 temp        = require 'temp'
 fs          = require 'fs'
 { resolve } = require 'path'
@@ -11,7 +12,7 @@ fs          = require 'fs'
 # Helpful promises
 exec = (cmd, options) -> new Promise (resolve, reject) ->
   [ cmd, args... ] = cmd.split ' '
-  child = cp.spawn cmd, args, options
+  child = cs cmd, args, options
   child.on 'close', (code) ->
     if code is 0 then resolve code
     else reject code
