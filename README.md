@@ -13,7 +13,7 @@ npm install --save npm-git-install
 Use
 ---
 
-In your `pacakge.json` add:
+In your `package.json` add:
 
 ```javascript
 {
@@ -100,7 +100,7 @@ Also try `--help` for more options.
 Just like with plain NPM, on the command line you can specify a space separated list of packages to be installed:
 
 ```sh
-npm-git install https://github.com/someone/awesome.git me@git.server.com/me/is-also-awesome.git#experimantal-branch
+npm-git install https://github.com/someone/awesome.git me@git.server.com/me/is-also-awesome.git#experimental-branch
 ```
 
 After hash you can specify a branch name, tag or a specific commit's sha. By default `master` branch is used.
