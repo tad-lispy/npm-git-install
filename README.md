@@ -1,3 +1,5 @@
+This project was a crutch to work around a limitation in old versions of NPM. Since the introduction of [the `prepare` hook](https://docs.npmjs.com/cli/v10/using-npm/scripts#prepare-and-prepublish), it should not be needed anymore.
+
 NPM Git Install
 ===============
 
